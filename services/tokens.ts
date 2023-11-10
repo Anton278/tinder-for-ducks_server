@@ -1,4 +1,6 @@
 import jwt from "jsonwebtoken";
+import { Types } from "mongoose";
+
 import Token from "../models/token.js";
 
 class TokensService {
@@ -17,7 +19,7 @@ class TokensService {
     return { accessToken, refreshToken };
   }
 
-  async saveToken(refreshToken: string, uid: string) {
+  async saveToken(refreshToken: string, uid: Types.ObjectId) {
     const token = await Token.findOne({ uid });
     if (token) {
       token.refreshToken = refreshToken;

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 
-import User, { UserT } from "../models/user.js";
+import User from "../models/user.js";
 
 class AuthService {
   async register(

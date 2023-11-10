@@ -10,8 +10,7 @@ authRouter.post(
   "/register",
   check("username").trim().notEmpty().escape().toLowerCase(),
   check("password").matches(passwordRegex).escape(),
-  // check("duck.[images][0].value").notEmpty(),
-  // check("duck.[description]").notEmpty(),
+  check("description").trim().notEmpty().escape(),
   authController.register
 );
 
