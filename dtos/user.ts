@@ -1,8 +1,17 @@
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Types } from "mongoose";
 
 import { IUser } from "../models/user";
 
-class UserDTO {
+export interface IUserDTO {
+  username: string;
+  duck: {
+    images: string[];
+    description: string;
+  };
+  id: Types.ObjectId;
+}
+
+class UserDTO implements IUserDTO {
   username;
   duck;
   id;

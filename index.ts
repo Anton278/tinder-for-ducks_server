@@ -3,11 +3,13 @@ import express from "express";
 import mongoose from "mongoose";
 import fileUpload from "express-fileupload";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 import authRouter from "./routers/auth.js";
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
