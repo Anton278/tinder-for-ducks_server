@@ -5,7 +5,7 @@ import fileUpload from "express-fileupload";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import authRouter from "./routers/auth.js";
+import authRouter from "./src/routers/auth.js";
 
 const app = express();
 
