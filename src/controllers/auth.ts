@@ -106,6 +106,34 @@ class AuthController {
       res.status(500).json({ message: err.message });
     }
   }
+
+  async refreshAccessToken(req: Request, res: Response) {
+    try {
+      const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+      if (!refreshTokenSecret) {
+        throw new Error("REFRESH_TOKEN_SECRET env variable is undefined");
+      }
+      const accessTokenHeader = req.headers["access-token"];
+      if (typeof accessTokenHeader !== "string") {
+        return res.status(401).json({ message: "Unauthorized user" });
+      }
+      const accessToken = accessTokenHeader.split(" ")[1];
+      if (!accessToken) {
+        return res.status(400).json({
+          message: 'Access token header must be format: "Bearer <token>"',
+        });
+      }
+      const refreshToken: string | undefined = req.cookies.refreshToken;
+      if (!refreshToken) {
+        return res.status(500).json({ message: "refreshToken is undefined" });
+      }
+      const user = jwt.verify(refreshToken, refreshTokenSecret) as IUserDTO;
+      const tokens = tokensService.create(user);
+      res.status(200).json({ accessToken: tokens.accessToken });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  }
 }
 
 const authController = new AuthController();
