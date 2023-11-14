@@ -13,5 +13,6 @@ authRouter.post(
   check("description").trim().notEmpty().escape(),
   authController.register
 );
+authRouter.post("/login", authController.login);
 
 export default authRouter;

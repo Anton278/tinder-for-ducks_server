@@ -1,5 +1,6 @@
 import { validationResult } from "express-validator";
 import type { Response } from "express";
+import bcrypt from "bcryptjs";
 
 import authService from "../services/auth.js";
 import UserDTO from "../dtos/user.js";
@@ -43,12 +44,37 @@ class AuthController {
       await tokensService.saveToken(tokens.refreshToken, userDTO.id);
       res.cookie("refreshToken", tokens.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
-        httpOnly: process.env.MODE !== "development",
+        httpOnly: process.env.NODE_ENV !== "development",
       });
       res.status(200).json({ ...userDTO, accessToken: tokens.accessToken });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
+  }
+
+  async login(
+    req: TypedReqBody<{ username: string; password: string }>,
+    res: Response
+  ) {
+    const user = await authService.login(req.body.username);
+    if (!user) {
+      return res.status(400).json({ message: "Wrong username or password" });
+    }
+    const isPasswordCorrect = bcrypt.compareSync(
+      req.body.password,
+      user.password
+    );
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "Wrong username or password" });
+    }
+    const tokens = tokensService.create();
+    await tokensService.saveToken(tokens.refreshToken, user._id);
+    res.cookie("refreshToken", tokens.refreshToken, {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: process.env.NODE_ENV !== "development",
+    });
+    const userDTO = new UserDTO(user);
+    res.status(200).json({ accessToken: tokens.accessToken, user: userDTO });
   }
 }
 

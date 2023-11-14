@@ -20,6 +20,11 @@ class AuthService {
     });
     return createdUser;
   }
+
+  async login(username: string) {
+    const user = await User.findOne({ username });
+    return user;
+  }
 }
 const authService = new AuthService();
 
