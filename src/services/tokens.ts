@@ -34,6 +34,15 @@ class TokensService {
     const token = await Token.findOneAndDelete({ uid });
     return token;
   }
+
+  validateAccessToken(accessToken: string) {
+    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+    if (!accessTokenSecret) {
+      throw new Error("ACCESS_TOKEN_SECRET env variable is absent");
+    }
+    const payload = jwt.verify(accessToken, accessTokenSecret);
+    return payload;
+  }
 }
 
 const tokensService = new TokensService();
