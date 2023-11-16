@@ -61,6 +61,9 @@ class AuthController {
     if (!user) {
       return res.status(400).json({ message: "Wrong username or password" });
     }
+    if (user.duck.description.includes("Generated on server")) {
+      return res.status(403).json({ message: "" });
+    }
     const isPasswordCorrect = bcrypt.compareSync(
       req.body.password,
       user.password
