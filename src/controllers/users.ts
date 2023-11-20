@@ -15,6 +15,16 @@ class UsersController {
     }
   }
 
+  async getOne(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await usersService.getOne(req.params.id);
+      const userDTO = new UserDTO(user);
+      res.status(200).json(userDTO);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await usersService.update(req.body);

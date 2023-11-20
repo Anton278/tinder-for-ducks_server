@@ -8,6 +8,14 @@ class UsersService {
     return users;
   }
 
+  async getOne(id: string) {
+    const user = await User.findById(id);
+    if (!user) {
+      throw ApiException.documentNotFound();
+    }
+    return user;
+  }
+
   async update(newUser: IUserDTO) {
     const user = await User.findOneAndUpdate({ _id: newUser.id }, newUser, {
       new: true,
