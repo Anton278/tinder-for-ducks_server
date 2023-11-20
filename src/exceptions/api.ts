@@ -16,6 +16,10 @@ class ApiException extends Error {
       "Access-Token header must follow format: 'Bearer <token>'"
     );
   }
+
+  static documentNotFound() {
+    return new ApiException(404, "Document not found");
+  }
 }
 
 export default ApiException;
