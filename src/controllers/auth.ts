@@ -47,7 +47,7 @@ class AuthController {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: process.env.NODE_ENV !== "development",
       });
-      res.status(200).json({ ...userDTO, accessToken: tokens.accessToken });
+      res.status(200).json({ user: userDTO, accessToken: tokens.accessToken });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
