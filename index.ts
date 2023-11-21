@@ -36,6 +36,8 @@ class FakeUser implements IUser {
   username;
   password;
   duck;
+  liked: string[];
+  disliked: string[];
 
   constructor(image: string) {
     this.username = uuidv4();
@@ -44,6 +46,8 @@ class FakeUser implements IUser {
       images: [image],
       description: "Generated on server",
     };
+    this.liked = [];
+    this.disliked = [];
   }
 }
 
