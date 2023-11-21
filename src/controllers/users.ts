@@ -28,7 +28,8 @@ class UsersController {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await usersService.update(req.body);
-      res.status(200).json(user);
+      const userDTO = new UserDTO(user);
+      res.status(200).json(userDTO);
     } catch (err: any) {
       next(err);
     }
