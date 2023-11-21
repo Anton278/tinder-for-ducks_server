@@ -7,6 +7,8 @@ export interface IUser {
     images: string[];
     description: string;
   };
+  liked: string[];
+  disliked: string[];
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -16,6 +18,8 @@ const userSchema = new mongoose.Schema<IUser>({
     images: [String],
     description: { type: String, required: true },
   },
+  liked: [String],
+  disliked: [String],
 });
 
 const User = mongoose.model("User", userSchema);

@@ -17,6 +17,8 @@ class AuthService {
       username,
       password: hashPassword,
       duck,
+      liked: [],
+      disliked: [],
     });
     return createdUser;
   }
