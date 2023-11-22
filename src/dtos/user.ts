@@ -11,6 +11,8 @@ export interface IUserDTO {
   id: Types.ObjectId;
   liked: string[];
   disliked: string[];
+  matchs: string[];
+  newMatchs: string[];
 }
 
 class UserDTO implements IUserDTO {
@@ -19,6 +21,8 @@ class UserDTO implements IUserDTO {
   id;
   liked;
   disliked;
+  matchs;
+  newMatchs;
 
   constructor(user: HydratedDocument<IUser>) {
     this.username = user.username;
@@ -26,6 +30,8 @@ class UserDTO implements IUserDTO {
     this.id = user._id;
     this.liked = user.liked;
     this.disliked = user.disliked;
+    this.matchs = user.matchs;
+    this.newMatchs = user.newMatchs;
   }
 }
 

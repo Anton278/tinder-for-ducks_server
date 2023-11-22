@@ -19,6 +19,8 @@ class AuthService {
       duck,
       liked: [],
       disliked: [],
+      matchs: [],
+      newMatchs: [],
     });
     return createdUser;
   }

@@ -9,6 +9,8 @@ export interface IUser {
   };
   liked: string[];
   disliked: string[];
+  matchs: string[];
+  newMatchs: string[];
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -20,6 +22,8 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   liked: [String],
   disliked: [String],
+  matchs: [String],
+  newMatchs: [String],
 });
 
 const User = mongoose.model("User", userSchema);

@@ -38,6 +38,8 @@ class FakeUser implements IUser {
   duck;
   liked: string[];
   disliked: string[];
+  matchs: string[];
+  newMatchs: string[];
 
   constructor(image: string) {
     this.username = uuidv4();
@@ -48,6 +50,8 @@ class FakeUser implements IUser {
     };
     this.liked = [];
     this.disliked = [];
+    this.matchs = [];
+    this.newMatchs = [];
   }
 }
 
