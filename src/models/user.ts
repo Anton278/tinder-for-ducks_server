@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+import { Notification } from "../types/notification";
+
 export interface IUser {
   username: string;
   password: string;
@@ -11,6 +13,10 @@ export interface IUser {
   disliked: string[];
   matchs: string[];
   newMatchs: string[];
+  notifications: {
+    old: Notification[];
+    new: Notification[];
+  };
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -24,6 +30,10 @@ const userSchema = new mongoose.Schema<IUser>({
   disliked: [String],
   matchs: [String],
   newMatchs: [String],
+  notifications: {
+    old: [{}],
+    new: [{}],
+  },
 });
 
 const User = mongoose.model("User", userSchema);

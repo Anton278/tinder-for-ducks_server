@@ -32,7 +32,7 @@ app.use("/users", usersRouter);
 
 app.use(errorMiddleware);
 
-class FakeUser implements IUser {
+class FakeUser {
   username;
   password;
   duck;

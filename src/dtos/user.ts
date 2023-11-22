@@ -1,6 +1,7 @@
 import { HydratedDocument, Types } from "mongoose";
 
 import { IUser } from "../models/user";
+import { Notification } from "../types/notification";
 
 export interface IUserDTO {
   username: string;
@@ -13,6 +14,10 @@ export interface IUserDTO {
   disliked: string[];
   matchs: string[];
   newMatchs: string[];
+  notifications: {
+    old: Notification[];
+    new: Notification[];
+  };
 }
 
 class UserDTO implements IUserDTO {
@@ -23,6 +28,7 @@ class UserDTO implements IUserDTO {
   disliked;
   matchs;
   newMatchs;
+  notifications;
 
   constructor(user: HydratedDocument<IUser>) {
     this.username = user.username;
@@ -32,6 +38,7 @@ class UserDTO implements IUserDTO {
     this.disliked = user.disliked;
     this.matchs = user.matchs;
     this.newMatchs = user.newMatchs;
+    this.notifications = user.notifications;
   }
 }
 

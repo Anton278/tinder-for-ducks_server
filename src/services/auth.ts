@@ -21,6 +21,10 @@ class AuthService {
       disliked: [],
       matchs: [],
       newMatchs: [],
+      notifications: {
+        old: [],
+        new: [],
+      },
     });
     return createdUser;
   }
