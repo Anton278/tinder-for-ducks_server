@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 
 import chatsService from "../services/chats";
 import ChatDTO from "../dtos/chat";
+import { Message } from "../models/chat";
 
 class ChatsController {
   async create(req: Request, res: Response, next: NextFunction) {
@@ -17,6 +18,19 @@ class ChatsController {
       res.status(200).json(createdChatDTO);
     } catch (err) {
       next(err);
+    }
+  }
+
+  async addMessage(chatId: string, message: Message) {
+    try {
+      const oldChat = await chatsService.getOne(chatId);
+      const oldChatDTO = new ChatDTO(oldChat);
+      const updatedChat = await chatsService.update({
+        ...oldChatDTO,
+        messages: [message, ...oldChatDTO.messages],
+      });
+    } catch (err) {
+      console.log(err);
     }
   }
 }

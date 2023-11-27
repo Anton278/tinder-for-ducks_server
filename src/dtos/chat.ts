@@ -1,7 +1,10 @@
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Types } from "mongoose";
 import { IChat } from "../models/chat";
 
-class ChatDTO {
+export interface IChatDTO extends IChat {
+  id: Types.ObjectId;
+}
+class ChatDTO implements IChatDTO {
   messages;
   users;
   id;

@@ -6,6 +6,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+import { WebSocketServer } from "ws";
 
 import authRouter from "./src/routers/auth.js";
 import usersRouter from "./src/routers/users.js";
@@ -14,8 +15,12 @@ import errorMiddleware from "./src/middlewares/error.js";
 import usersService from "./src/services/users.js";
 import User, { IUser } from "./src/models/user.js";
 import { GetRandomDuck } from "./src/types/responses/getRandomDuck.js";
+import chatsController from "./src/controllers/chats.js";
 
 const app = express();
+const wss = new WebSocketServer({
+  port: 5001,
+});
 
 app.use(cookieParser());
 app.use(express.json());
@@ -107,9 +112,40 @@ async function startApp() {
     console.log("fake users added");
     const port = process.env.PORT ? +process.env.PORT : 5000;
     app.listen(port, () => console.log("Server started on port " + port));
+
+    const wssPort = process.env.WSS_PORT ? +process.env.WSS_PORT : 5001;
+    wss.on("connection", (ws) => {
+      ws.on("error", console.error);
+
+      ws.on("message", (msg) => {
+        const parsedMsg = JSON.parse(msg.toString());
+        switch (parsedMsg.event) {
+          case "add-message":
+            chatsController.addMessage(parsedMsg.chatId, {
+              authorId: parsedMsg.authorId,
+              message: parsedMsg.message,
+            });
+            break;
+          default:
+            break;
+        }
+      });
+
+      console.log("wss started on port " + wssPort);
+      ws.send("connected succesfully");
+    });
   } catch (err) {
     console.log(err);
   }
 }
+
+// const message = {
+//   event: "send-message",
+//   message: "test message",
+//   authorId: // ...
+//   chatId: ""
+// };
+
+function sendMessage() {}
 
 startApp();

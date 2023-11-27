@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-interface Message {
+export interface Message {
   authorId: string;
   message: string;
 }
