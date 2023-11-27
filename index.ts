@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import expressWs from "express-ws";
+const { app } = expressWs(express());
 import mongoose, { HydratedDocument } from "mongoose";
 import fileUpload from "express-fileupload";
 import cors from "cors";
@@ -13,8 +15,7 @@ import errorMiddleware from "./src/middlewares/error.js";
 import usersService from "./src/services/users.js";
 import User, { IUser } from "./src/models/user.js";
 import { GetRandomDuck } from "./src/types/responses/getRandomDuck.js";
-
-const app = express();
+import chatsRouter from "./src/routers/chats.js";
 
 app.use(cookieParser());
 app.use(express.json());
@@ -26,6 +27,18 @@ app.use(
 );
 app.use(express.static("public"));
 app.use(fileUpload({}));
+
+app.ws("/chats", (ws, req) => {
+  ws.on("message", (msg) => {
+    try {
+      const parsedMsg = JSON.parse(msg as unknown as string);
+      // @ts-ignore
+      chatsRouter(ws, req, parsedMsg);
+    } catch (err) {
+      ws.send("unable to parse message");
+    }
+  });
+});
 
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
