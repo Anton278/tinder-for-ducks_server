@@ -127,7 +127,7 @@ async function startApp() {
             });
             break;
           default:
-            break;
+            ws.send("event is not recognized");
         }
       });
 

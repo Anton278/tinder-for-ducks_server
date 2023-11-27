@@ -21,6 +21,16 @@ class ChatsController {
     }
   }
 
+  async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const chats = await chatsService.getAll();
+      const chatDTOs = chats.map((chat) => new ChatDTO(chat));
+      res.status(200).json(chatDTOs);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async addMessage(chatId: string, message: Message) {
     try {
       const oldChat = await chatsService.getOne(chatId);

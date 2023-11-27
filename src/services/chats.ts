@@ -16,6 +16,11 @@ class ChatsService {
     return chat;
   }
 
+  async getAll() {
+    const chats = await Chat.find({});
+    return chats;
+  }
+
   async update(chat: IChatDTO) {
     const updatedChat = Chat.findByIdAndUpdate(chat.id, chat, {
       returnDocument: "after",
