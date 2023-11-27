@@ -9,6 +9,7 @@ import axios from "axios";
 
 import authRouter from "./src/routers/auth.js";
 import usersRouter from "./src/routers/users.js";
+import chatsRouter from "./src/routers/chats.js";
 import errorMiddleware from "./src/middlewares/error.js";
 import usersService from "./src/services/users.js";
 import User, { IUser } from "./src/models/user.js";
@@ -29,6 +30,7 @@ app.use(fileUpload({}));
 
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
+app.use("/chats", chatsRouter);
 
 app.use(errorMiddleware);
 
