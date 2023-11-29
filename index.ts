@@ -130,33 +130,51 @@ async function startApp() {
           return;
         }
 
+        if (data.event === "ack") {
+          //@ts-expect-error
+          ws.sendAck = true;
+        }
+
         if (data.event === "send-message") {
           if (!data.message || !data.authorId || !data.chatId) {
             return ws.send("message does not meet expected shape");
           }
           // @ts-expect-error
-          if (!ws.chatId || !ws.authorId) {
+          if (!ws.chatId) {
             // @ts-expect-error
             ws.chatId = data.chatId;
-            // @ts-expect-error
-            ws.authorId = data.authorId;
           }
+
+          // set that server didn't receive ack messages
+          wss.clients.forEach((client) => {
+            // @ts-expect-error
+            if (client.chatId === ws.chatId) {
+              //@ts-expect-error
+              ws.sendAck = false;
+            }
+          });
 
           try {
             await chatsController.addMessage(data.chatId, {
               authorId: data.authorId,
               message: data.message,
             });
-            wss.clients.forEach((client) => {
-              if (
+            const id = setInterval(() => {
+              let ackMessagesCount = 0;
+              wss.clients.forEach((client) => {
                 // @ts-expect-error
-                client.chatId === ws.chatId &&
+                if (client.sendAck) {
+                  return (ackMessagesCount += 1);
+                }
                 // @ts-expect-error
-                client.authorId !== ws.authorId
-              ) {
-                client.send(JSON.stringify(data));
+                if (client.chatId === ws.chatId) {
+                  client.send(JSON.stringify(data));
+                }
+              });
+              if (ackMessagesCount === 2) {
+                clearInterval(id);
               }
-            });
+            }, 1000);
           } catch (err) {
             ws.send("failed to save message");
           }
