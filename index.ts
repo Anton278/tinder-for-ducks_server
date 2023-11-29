@@ -18,8 +18,9 @@ import { GetRandomDuck } from "./src/types/responses/getRandomDuck.js";
 import chatsController from "./src/controllers/chats.js";
 
 const app = express();
+const wssPort = process.env.WSS_PORT ? +process.env.WSS_PORT : 5001;
 const wss = new WebSocketServer({
-  port: 5001,
+  port: wssPort,
 });
 
 app.use(cookieParser());
@@ -113,7 +114,6 @@ async function startApp() {
     const port = process.env.PORT ? +process.env.PORT : 5000;
     app.listen(port, () => console.log("Server started on port " + port));
 
-    const wssPort = process.env.WSS_PORT ? +process.env.WSS_PORT : 5001;
     wss.on("connection", (ws) => {
       ws.on("error", (err) => console.log(err));
 
