@@ -115,24 +115,42 @@ async function startApp() {
 
     const wssPort = process.env.WSS_PORT ? +process.env.WSS_PORT : 5001;
     wss.on("connection", (ws) => {
-      ws.on("error", console.error);
+      ws.on("error", (err) => console.log(err));
 
-      ws.on("message", (msg) => {
-        const parsedMsg = JSON.parse(msg.toString());
-        switch (parsedMsg.event) {
-          case "add-message":
-            chatsController.addMessage(parsedMsg.chatId, {
-              authorId: parsedMsg.authorId,
-              message: parsedMsg.message,
-            });
-            break;
-          default:
-            ws.send("event is not recognized");
+      ws.on("message", async (msg) => {
+        const data = JSON.parse(msg.toString());
+        if (!data.event || !data.message || !data.authorId || !data.chatId) {
+          return ws.send("message does not meet expected shape");
         }
-      });
+        // @ts-expect-error
+        ws.chatId = data.chatId;
+        // @ts-expect-error
+        ws.authorId = data.authorId;
 
-      console.log("wss started on port " + wssPort);
-      ws.send("connected succesfully");
+        if (data.event === "send-message") {
+          try {
+            await chatsController.addMessage(data.chatId, {
+              authorId: data.authorId,
+              message: data.message,
+            });
+            wss.clients.forEach((client) => {
+              if (
+                // @ts-expect-error
+                client.chatId === ws.chatId &&
+                // @ts-expect-error
+                client.authorId !== ws.authorId
+              ) {
+                client.send(JSON.stringify(data));
+              }
+            });
+          } catch (err) {
+            ws.send("failed to save message");
+          }
+          return;
+        }
+
+        return ws.send("event is not recognized");
+      });
     });
   } catch (err) {
     console.log(err);
@@ -145,7 +163,5 @@ async function startApp() {
 //   authorId: // ...
 //   chatId: ""
 // };
-
-function sendMessage() {}
 
 startApp();

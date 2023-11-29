@@ -32,16 +32,12 @@ class ChatsController {
   }
 
   async addMessage(chatId: string, message: Message) {
-    try {
-      const oldChat = await chatsService.getOne(chatId);
-      const oldChatDTO = new ChatDTO(oldChat);
-      const updatedChat = await chatsService.update({
-        ...oldChatDTO,
-        messages: [message, ...oldChatDTO.messages],
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    const oldChat = await chatsService.getOne(chatId);
+    const oldChatDTO = new ChatDTO(oldChat);
+    const updatedChat = await chatsService.update({
+      ...oldChatDTO,
+      messages: [message, ...oldChatDTO.messages],
+    });
   }
 }
 
