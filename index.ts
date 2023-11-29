@@ -117,17 +117,31 @@ async function startApp() {
     wss.on("connection", (ws) => {
       ws.on("error", (err) => console.log(err));
 
+      // @ts-expect-error
+      ws.lastHeartbeat = new Date().toISOString();
+
       ws.on("message", async (msg) => {
         const data = JSON.parse(msg.toString());
-        if (!data.event || !data.message || !data.authorId || !data.chatId) {
-          return ws.send("message does not meet expected shape");
+
+        if (data.event === "heartbeat" && data.message === "ping") {
+          // @ts-expect-error
+          ws.lastHeartbeat = new Date().toISOString();
+          ws.send(JSON.stringify({ event: "heartbeat", message: "pong" }));
+          return;
         }
-        // @ts-expect-error
-        ws.chatId = data.chatId;
-        // @ts-expect-error
-        ws.authorId = data.authorId;
 
         if (data.event === "send-message") {
+          if (!data.message || !data.authorId || !data.chatId) {
+            return ws.send("message does not meet expected shape");
+          }
+          // @ts-expect-error
+          if (!ws.chatId || !ws.authorId) {
+            // @ts-expect-error
+            ws.chatId = data.chatId;
+            // @ts-expect-error
+            ws.authorId = data.authorId;
+          }
+
           try {
             await chatsController.addMessage(data.chatId, {
               authorId: data.authorId,
@@ -152,6 +166,20 @@ async function startApp() {
         return ws.send("event is not recognized");
       });
     });
+
+    const heartbeatTimeout = process.env.HEARTBEAT_TIMEOUT
+      ? +process.env.HEARTBEAT_TIMEOUT
+      : 40000;
+    setInterval(() => {
+      wss.clients.forEach((client) => {
+        // @ts-expect-error
+        const diff = (Date.now() - Date.parse(client.lastHeartbeat)) / 1000;
+        if (diff >= heartbeatTimeout / 1000) {
+          // not alive connection
+          client.close();
+        }
+      });
+    }, heartbeatTimeout);
   } catch (err) {
     console.log(err);
   }
