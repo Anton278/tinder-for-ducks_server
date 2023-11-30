@@ -4,6 +4,7 @@ import User from "../models/user.js";
 
 class AuthService {
   async register(
+    email: string,
     username: string,
     password: string,
     duck: { description: string; images: string[] }
@@ -14,6 +15,7 @@ class AuthService {
     }
     const hashPassword = bcrypt.hashSync(password, 7);
     const createdUser = await User.create({
+      email,
       username,
       password: hashPassword,
       duck,

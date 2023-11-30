@@ -12,6 +12,7 @@ import fileService from "../services/file.js";
 class AuthController {
   async register(
     req: TypedReqBody<{
+      email: string;
       description: string;
       password: string;
       username: string;
@@ -35,6 +36,7 @@ class AuthController {
       );
 
       const user = await authService.register(
+        req.body.email,
         req.body.username,
         req.body.password,
         { description: req.body.description, images }
@@ -47,7 +49,10 @@ class AuthController {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: process.env.NODE_ENV !== "development",
       });
-      res.status(200).json({ user: userDTO, accessToken: tokens.accessToken });
+      res.status(200).json({
+        user: { email: req.body.email, ...userDTO },
+        accessToken: tokens.accessToken,
+      });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }

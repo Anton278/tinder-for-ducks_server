@@ -8,6 +8,7 @@ const authRouter = Router();
 
 authRouter.post(
   "/register",
+  check("email").isEmail().notEmpty().escape(),
   check("username").trim().notEmpty().escape().toLowerCase(),
   check("password").matches(passwordRegex).escape(),
   check("description").trim().notEmpty().escape(),

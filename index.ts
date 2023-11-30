@@ -41,6 +41,7 @@ app.use("/chats", chatsRouter);
 app.use(errorMiddleware);
 
 class FakeUser {
+  email;
   username;
   password;
   duck;
@@ -50,6 +51,7 @@ class FakeUser {
   newMatchs: string[];
 
   constructor(image: string) {
+    this.email = uuidv4();
     this.username = uuidv4();
     this.password = "123";
     this.duck = {

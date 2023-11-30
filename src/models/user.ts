@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { Notification } from "../types/notification";
 
 export interface IUser {
+  email: string;
   username: string;
   password: string;
   duck: {
@@ -20,6 +21,7 @@ export interface IUser {
 }
 
 const userSchema = new mongoose.Schema<IUser>({
+  email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   duck: {
