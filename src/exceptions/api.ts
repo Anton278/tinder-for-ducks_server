@@ -20,6 +20,10 @@ class ApiException extends Error {
   static documentNotFound() {
     return new ApiException(404, "Document not found");
   }
+
+  static userExist(type: "username" | "email") {
+    return new ApiException(409, `User with given ${type} already exist`);
+  }
 }
 
 export default ApiException;

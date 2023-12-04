@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 
 import User from "../models/user.js";
+import ApiException from "../exceptions/api.js";
 
 class AuthService {
   async register(
@@ -11,7 +12,7 @@ class AuthService {
   ) {
     const candidate = await User.findOne({ username });
     if (candidate) {
-      throw new Error(`user with given username already exist`);
+      throw ApiException.userExist("username");
     }
     const hashPassword = bcrypt.hashSync(password, 7);
     const createdUser = await User.create({

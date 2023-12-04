@@ -1,5 +1,5 @@
 import { validationResult } from "express-validator";
-import type { Response, Request } from "express";
+import type { Response, Request, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -17,7 +17,8 @@ class AuthController {
       password: string;
       username: string;
     }>,
-    res: Response
+    res: Response,
+    next: NextFunction
   ) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -25,7 +26,7 @@ class AuthController {
     }
     try {
       if (!req.files) {
-        throw new Error("files in request are absent");
+        return res.status(400).json({ message: "Files in request are absent" });
       }
       const files = Object.values(req.files).map((file) =>
         Array.isArray(file) ? file[0] : file
@@ -54,7 +55,7 @@ class AuthController {
         accessToken: tokens.accessToken,
       });
     } catch (err: any) {
-      res.status(500).json({ message: err.message });
+      next(err);
     }
   }
 
@@ -62,28 +63,32 @@ class AuthController {
     req: TypedReqBody<{ username: string; password: string }>,
     res: Response
   ) {
-    const user = await authService.login(req.body.username);
-    if (!user) {
-      return res.status(400).json({ message: "Wrong username or password" });
+    try {
+      const user = await authService.login(req.body.username);
+      if (!user) {
+        return res.status(400).json({ message: "Wrong username or password" });
+      }
+      if (user.duck.description.includes("Generated on server")) {
+        return res.status(403).json({ message: "" });
+      }
+      const isPasswordCorrect = bcrypt.compareSync(
+        req.body.password,
+        user.password
+      );
+      if (!isPasswordCorrect) {
+        return res.status(400).json({ message: "Wrong username or password" });
+      }
+      const userDTO: IUserDTO = new UserDTO(user);
+      const tokens = tokensService.create(userDTO);
+      await tokensService.saveToken(tokens.refreshToken, user._id);
+      res.cookie("refreshToken", tokens.refreshToken, {
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        httpOnly: process.env.NODE_ENV !== "development",
+      });
+      res.status(200).json({ accessToken: tokens.accessToken, user: userDTO });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
     }
-    if (user.duck.description.includes("Generated on server")) {
-      return res.status(403).json({ message: "" });
-    }
-    const isPasswordCorrect = bcrypt.compareSync(
-      req.body.password,
-      user.password
-    );
-    if (!isPasswordCorrect) {
-      return res.status(400).json({ message: "Wrong username or password" });
-    }
-    const userDTO: IUserDTO = new UserDTO(user);
-    const tokens = tokensService.create(userDTO);
-    await tokensService.saveToken(tokens.refreshToken, user._id);
-    res.cookie("refreshToken", tokens.refreshToken, {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      httpOnly: process.env.NODE_ENV !== "development",
-    });
-    res.status(200).json({ accessToken: tokens.accessToken, user: userDTO });
   }
 
   async logout(req: Request, res: Response) {
