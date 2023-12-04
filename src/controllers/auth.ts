@@ -8,6 +8,8 @@ import UserDTO, { IUserDTO } from "../dtos/user.js";
 import tokensService from "../services/tokens.js";
 import { TypedReqBody } from "../types/typedReqBody.js";
 import fileService from "../services/file.js";
+import usersService from "../services/users.js";
+import ApiException from "../exceptions/api.js";
 
 class AuthController {
   async register(
@@ -145,6 +147,29 @@ class AuthController {
       res.status(200).json({ accessToken: tokens.accessToken });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
+    }
+  }
+
+  async checkUsernameUniqueness(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const username = req.query.username;
+      if (!username) {
+        return res
+          .status(400)
+          .json({ message: "query parameter username is absent" });
+      }
+      const users = await usersService.getAll();
+      const candidate = users.find((user) => user.username === username);
+      if (candidate) {
+        throw ApiException.userExist("username");
+      }
+      res.status(200).json({ message: "Given username is not taken" });
+    } catch (err) {
+      next(err);
     }
   }
 }

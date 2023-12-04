@@ -17,5 +17,9 @@ authRouter.post(
 authRouter.post("/login", authController.login);
 authRouter.post("/logout", authController.logout);
 authRouter.post("/refreshAccessToken", authController.refreshAccessToken);
+authRouter.get(
+  "/checkUsernameUniqueness",
+  authController.checkUsernameUniqueness
+);
 
 export default authRouter;
