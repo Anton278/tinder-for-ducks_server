@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
-import usersService from "../services/users";
-import UserDTO, { IUserDTO } from "../dtos/user";
-import CandidateDTO from "../dtos/candidate";
+import usersService from "../services/users.js";
+import UserDTO from "../dtos/user.js";
 
 class UsersController {
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -19,7 +18,7 @@ class UsersController {
           candidate.id !== uid && !user.liked.includes(candidate.id)
       );
       const candidateDtos = candidates.map(
-        (candidate) => new CandidateDTO(candidate)
+        (candidate) => new UserDTO(candidate)
       );
       res.status(200).json(candidateDtos);
     } catch (e) {
@@ -39,7 +38,7 @@ class UsersController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const user: IUserDTO = req.body;
+      const user = req.body;
       const oldUser = await usersService.getOne(user.id as unknown as string);
       const hasNewLike = user.liked.length !== oldUser.liked.length;
       if (hasNewLike) {

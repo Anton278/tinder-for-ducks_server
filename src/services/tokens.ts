@@ -2,10 +2,10 @@ import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
 
 import Token from "../models/token.js";
-import { IUserDTO } from "../dtos/user.js";
+import { IFullUserDTO } from "../dtos/fullUser.js";
 
 class TokensService {
-  create(user: IUserDTO) {
+  create(user: IFullUserDTO) {
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
     const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
     if (!accessTokenSecret || !refreshTokenSecret) {

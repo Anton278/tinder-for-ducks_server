@@ -1,15 +1,14 @@
 import { validationResult } from "express-validator";
 import type { Response, Request, NextFunction } from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
 import authService from "../services/auth.js";
-import UserDTO, { IUserDTO } from "../dtos/user.js";
 import tokensService from "../services/tokens.js";
 import { TypedReqBody } from "../types/typedReqBody.js";
 import fileService from "../services/file.js";
 import usersService from "../services/users.js";
 import ApiException from "../exceptions/api.js";
+import FullUserDTO from "../dtos/fullUser.js";
 
 class AuthController {
   async register(
@@ -45,15 +44,14 @@ class AuthController {
         { description: req.body.description, images }
       );
 
-      const userDTO: IUserDTO = new UserDTO(user);
-      const tokens = tokensService.create(userDTO);
-      await tokensService.saveToken(tokens.refreshToken, userDTO.id);
+      const tokens = tokensService.create(new FullUserDTO(user));
+      await tokensService.saveToken(tokens.refreshToken, user.id);
       res.cookie("refreshToken", tokens.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: process.env.NODE_ENV !== "development",
       });
       res.status(200).json({
-        user: { email: req.body.email, ...userDTO },
+        user: new FullUserDTO(user),
         accessToken: tokens.accessToken,
       });
     } catch (err: any) {
@@ -80,14 +78,15 @@ class AuthController {
       if (!isPasswordCorrect) {
         return res.status(400).json({ message: "Wrong username or password" });
       }
-      const userDTO: IUserDTO = new UserDTO(user);
-      const tokens = tokensService.create(userDTO);
+      const tokens = tokensService.create(new FullUserDTO(user));
       await tokensService.saveToken(tokens.refreshToken, user._id);
       res.cookie("refreshToken", tokens.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: process.env.NODE_ENV !== "development",
       });
-      res.status(200).json({ accessToken: tokens.accessToken, user: userDTO });
+      res
+        .status(200)
+        .json({ accessToken: tokens.accessToken, user: new FullUserDTO(user) });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
@@ -95,10 +94,6 @@ class AuthController {
 
   async logout(req: Request, res: Response) {
     try {
-      const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
-      if (!refreshTokenSecret) {
-        throw new Error("REFRESH_TOKEN_SECRET env variable is undefined");
-      }
       const accessTokenHeader = req.headers["access-token"];
       if (typeof accessTokenHeader !== "string") {
         return res.status(401).json({ message: "Unauthorized user" });
@@ -113,8 +108,12 @@ class AuthController {
       if (!refreshToken) {
         return res.status(500).json({ message: "refreshToken is undefined" });
       }
-      const user = jwt.verify(refreshToken, refreshTokenSecret) as IUserDTO;
-      await tokensService.delete(user.id);
+      const payload = tokensService.validateRefreshToken(refreshToken);
+      if (typeof payload === "string") {
+        console.log("token payload is string");
+        return res.status(500).json({});
+      }
+      await tokensService.delete(payload.user.id);
       res.clearCookie("refreshToken");
       res.status(200).json({});
     } catch (err: any) {
