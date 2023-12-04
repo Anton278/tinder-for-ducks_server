@@ -1,4 +1,4 @@
-import { IUserDTO } from "../dtos/user";
+import { IFullUserDTO } from "../dtos/fullUser";
 import ApiException from "../exceptions/api";
 import User from "../models/user";
 
@@ -16,7 +16,7 @@ class UsersService {
     return user;
   }
 
-  async update(newUser: IUserDTO) {
+  async update(newUser: IFullUserDTO) {
     const user = await User.findOneAndUpdate({ _id: newUser.id }, newUser, {
       new: true,
     });
