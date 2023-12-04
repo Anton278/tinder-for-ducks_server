@@ -8,12 +8,16 @@ class UsersController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       // @ts-ignore
-      const user: IUserDTO = req.user;
-      if (!user) {
+      const uid = req.user?.id;
+      if (!uid) {
         throw new Error("req.user absent");
       }
+      const user = await usersService.getOne(uid);
       const users = await usersService.getAll();
-      const candidates = users.filter((candidate) => candidate.id !== user.id);
+      const candidates = users.filter(
+        (candidate) =>
+          candidate.id !== uid && !user.liked.includes(candidate.id)
+      );
       const candidateDtos = candidates.map(
         (candidate) => new CandidateDTO(candidate)
       );
