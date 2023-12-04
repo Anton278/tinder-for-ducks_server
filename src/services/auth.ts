@@ -10,9 +10,10 @@ class AuthService {
     password: string,
     duck: { description: string; images: string[] }
   ) {
-    const candidate = await User.findOne({ username });
-    if (candidate) {
-      throw ApiException.userExist("username");
+    const emailCandidate = await User.findOne({ email });
+    const usernameCandidate = await User.findOne({ username });
+    if (emailCandidate || usernameCandidate) {
+      throw ApiException.userExist(usernameCandidate ? "username" : "email");
     }
     const hashPassword = bcrypt.hashSync(password, 7);
     const createdUser = await User.create({
