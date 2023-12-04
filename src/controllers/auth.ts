@@ -141,7 +141,8 @@ class AuthController {
       if (typeof payload === "string") {
         throw new Error("token payload is string type");
       }
-      const tokens = tokensService.create(payload.user);
+      const user = await usersService.getOne(payload.user.id);
+      const tokens = tokensService.create(new FullUserDTO(user));
       res.status(200).json({ accessToken: tokens.accessToken });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
