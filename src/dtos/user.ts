@@ -9,7 +9,7 @@ export interface IUserDTO {
     images: string[];
     description: string;
   };
-  id: Types.ObjectId | string;
+  id: Types.ObjectId;
   liked: string[];
   disliked: string[];
   matchs: string[];

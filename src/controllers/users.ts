@@ -2,14 +2,22 @@ import { NextFunction, Request, Response } from "express";
 
 import usersService from "../services/users";
 import UserDTO, { IUserDTO } from "../dtos/user";
+import CandidateDTO from "../dtos/candidate";
 
 class UsersController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = (await usersService.getAll()).map(
-        (user) => new UserDTO(user)
+      // @ts-ignore
+      const user: IUserDTO = req.user;
+      if (!user) {
+        throw new Error("req.user absent");
+      }
+      const users = await usersService.getAll();
+      const candidates = users.filter((candidate) => candidate.id !== user.id);
+      const candidateDtos = candidates.map(
+        (candidate) => new CandidateDTO(candidate)
       );
-      res.status(200).json(users);
+      res.status(200).json(candidateDtos);
     } catch (e) {
       next(e);
     }
