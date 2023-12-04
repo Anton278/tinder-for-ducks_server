@@ -43,6 +43,15 @@ class TokensService {
     const payload = jwt.verify(accessToken, accessTokenSecret);
     return payload;
   }
+
+  validateRefreshToken(refreshToken: string) {
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+    if (!refreshTokenSecret) {
+      throw new Error("REFRESH_TOKEN_SECRET env variable is absent");
+    }
+    const payload = jwt.verify(refreshToken, refreshTokenSecret);
+    return payload;
+  }
 }
 
 const tokensService = new TokensService();

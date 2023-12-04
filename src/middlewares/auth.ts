@@ -20,7 +20,12 @@ export default function authMiddleware(
     return next(ApiException.accessTokenFormat());
   }
   try {
-    tokensService.validateAccessToken(accessToken);
+    const payload = tokensService.validateAccessToken(accessToken);
+    if (typeof payload !== "string") {
+      // @ts-ignore
+      req.user = payload.user;
+    }
+
     next();
   } catch (err) {
     next(ApiException.unauthorized());

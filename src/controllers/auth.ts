@@ -124,10 +124,6 @@ class AuthController {
 
   async refreshAccessToken(req: Request, res: Response) {
     try {
-      const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
-      if (!refreshTokenSecret) {
-        throw new Error("REFRESH_TOKEN_SECRET env variable is undefined");
-      }
       const accessTokenHeader = req.headers["access-token"];
       if (typeof accessTokenHeader !== "string") {
         return res.status(401).json({ message: "Unauthorized user" });
@@ -142,8 +138,11 @@ class AuthController {
       if (!refreshToken) {
         return res.status(500).json({ message: "refreshToken is undefined" });
       }
-      const user = jwt.verify(refreshToken, refreshTokenSecret) as IUserDTO;
-      const tokens = tokensService.create(user);
+      const payload = tokensService.validateRefreshToken(refreshToken);
+      if (typeof payload === "string") {
+        throw new Error("token payload is string type");
+      }
+      const tokens = tokensService.create(payload.user);
       res.status(200).json({ accessToken: tokens.accessToken });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
