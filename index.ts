@@ -11,7 +11,6 @@ import chatsRouter from "./src/routers/chats.js";
 import errorMiddleware from "./src/middlewares/error.js";
 import addFakeUsers from "./src/utils/addFakeUsers.js";
 import startWsServer from "./src/utils/startWsServer.js";
-import startFindingMatchs from "./src/utils/startFindingMatchs.js";
 
 const app = express();
 
@@ -46,7 +45,6 @@ async function startApp() {
     await addFakeUsers();
     startHttpServer();
     startWsServer();
-    startFindingMatchs();
   } catch (err) {
     console.log(err);
   }
