@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 
 import usersService from "../services/users.js";
 import UserDTO from "../dtos/user.js";
+import FullUserDTO from "../dtos/fullUser.js";
 
 class UsersController {
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -52,8 +53,7 @@ class UsersController {
       }
 
       const updatedUser = await usersService.update(req.body);
-      const userDTO = new UserDTO(updatedUser);
-      res.status(200).json(userDTO);
+      res.status(200).json(new FullUserDTO(updatedUser));
     } catch (err: any) {
       next(err);
     }
