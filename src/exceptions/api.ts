@@ -24,6 +24,10 @@ class ApiException extends Error {
   static userExist(type: "username" | "email") {
     return new ApiException(409, `User with given ${type} already exist`);
   }
+
+  static forbidden() {
+    return new ApiException(403, "refuse to authorize");
+  }
 }
 
 export default ApiException;

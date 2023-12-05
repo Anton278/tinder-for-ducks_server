@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import usersService from "../services/users.js";
 import UserDTO from "../dtos/user.js";
 import FullUserDTO from "../dtos/fullUser.js";
+import ApiException from "../exceptions/api.js";
 
 class UsersController {
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -39,20 +40,28 @@ class UsersController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = req.body;
-      const oldUser = await usersService.getOne(user.id as unknown as string);
-      const hasNewLike = user.liked.length !== oldUser.liked.length;
+      // @ts-ignore
+      const uid = req.user?.id;
+      if (!uid) {
+        throw new Error("req.user undefined");
+      }
+      const newUser = req.body;
+      if (uid !== newUser.id) {
+        throw ApiException.forbidden();
+      }
+      const oldUser = await usersService.getOne(uid);
+      const hasNewLike = newUser.liked.length !== oldUser.liked.length;
       if (hasNewLike) {
-        const newLike = user.liked[user.liked.length - 1];
+        const newLike = newUser.liked[newUser.liked.length - 1];
         const likedUser = await usersService.getOne(newLike);
-        if (likedUser.liked.includes(user.id as unknown as string)) {
-          user.newMatchs.push(likedUser._id as unknown as string);
-          likedUser.newMatchs.push(user.id as unknown as string);
+        if (likedUser.liked.includes(uid)) {
+          newUser.newMatchs.push(likedUser._id as unknown as string);
+          likedUser.newMatchs.push(uid);
           await likedUser.save();
         }
       }
 
-      const updatedUser = await usersService.update(req.body);
+      const updatedUser = await usersService.update(newUser);
       res.status(200).json(new FullUserDTO(updatedUser));
     } catch (err: any) {
       next(err);
