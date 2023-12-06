@@ -18,6 +18,7 @@ export interface IFullUserDTO {
     old: Notification[];
     new: Notification[];
   };
+  chats: string[];
 }
 
 class FullUserDTO implements IFullUserDTO {
@@ -29,6 +30,7 @@ class FullUserDTO implements IFullUserDTO {
   matchs;
   newMatchs;
   notifications;
+  chats;
 
   constructor(user: HydratedDocument<IUser>) {
     this.username = user.username;
@@ -39,6 +41,7 @@ class FullUserDTO implements IFullUserDTO {
     this.matchs = user.matchs;
     this.newMatchs = user.newMatchs;
     this.notifications = user.notifications;
+    this.chats = user.chats;
   }
 }
 

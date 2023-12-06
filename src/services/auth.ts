@@ -29,6 +29,7 @@ class AuthService {
         old: [],
         new: [],
       },
+      chats: [],
     });
     return createdUser;
   }

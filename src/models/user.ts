@@ -18,6 +18,7 @@ export interface IUser {
     old: Notification[];
     new: Notification[];
   };
+  chats: string[];
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -36,6 +37,7 @@ const userSchema = new mongoose.Schema<IUser>({
     old: [{}],
     new: [{}],
   },
+  chats: [String],
 });
 
 const User = mongoose.model("User", userSchema);
