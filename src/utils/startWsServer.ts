@@ -23,6 +23,7 @@ export default function startWsServer() {
 
     ws.on("message", async (msg) => {
       const data = JSON.parse(msg.toString());
+      console.log("received message ", data);
 
       if (data.event === "heartbeat" && data.message === "ping") {
         // @ts-expect-error
@@ -45,7 +46,7 @@ export default function startWsServer() {
         //   page?: number;
         // };
         if (!data.uid || !data.chatId) {
-          return ws.send("absent authorId or chatId");
+          return ws.send(JSON.stringify("absent authorId or chatId"));
         }
         // @ts-expect-error
         if (!ws.chatId) {
@@ -57,7 +58,7 @@ export default function startWsServer() {
             mesagesPerPage: data.messagesPerPage,
             page: data.page,
           });
-          ws.send(JSON.stringify(messages));
+          ws.send(JSON.stringify({ event: "get-messages", ...messages }));
         } catch (err) {
           ws.send("Failed to get chat");
         }
