@@ -36,6 +36,34 @@ export default function startWsServer() {
         ws.sendAck = true;
       }
 
+      if (data.event === "get-messages") {
+        // type GetChatMessage = {
+        //   event: "send-message";
+        //   uid: string;
+        //   chatId: string;
+        //   messagesPerPage?: number;
+        //   page?: number;
+        // };
+        if (!data.uid || !data.chatId) {
+          return ws.send("absent authorId or chatId");
+        }
+        // @ts-expect-error
+        if (!ws.chatId) {
+          // @ts-expect-error
+          ws.chatId = data.chatId;
+        }
+        try {
+          const messages = await chatsController.getOne(data.chatId, data.uid, {
+            mesagesPerPage: data.messagesPerPage,
+            page: data.page,
+          });
+          ws.send(JSON.stringify(messages));
+        } catch (err) {
+          ws.send("Failed to get chat");
+        }
+        return;
+      }
+
       if (data.event === "send-message") {
         if (!data.message || !data.authorId || !data.chatId) {
           return ws.send("message does not meet expected shape");
