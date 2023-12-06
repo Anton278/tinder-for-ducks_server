@@ -1,6 +1,8 @@
 import { WebSocketServer } from "ws";
 
 import chatsController from "../controllers/chats";
+import chatsService from "../services/chats";
+import { Message } from "../types/message";
 
 const wssPort = process.env.WSS_PORT ? +process.env.WSS_PORT : 5001;
 const wss = new WebSocketServer({
@@ -15,14 +17,15 @@ const wss = new WebSocketServer({
 // };
 
 export default function startWsServer() {
-  wss.on("connection", (ws) => {
-    ws.on("error", (err) => console.log(err));
+  wss.on("connection", (ws, req) => {
+    console.log("req ", req);
 
+    ws.on("error", (err) => console.log(err));
     // @ts-expect-error
     ws.lastHeartbeat = new Date().toISOString();
 
     ws.on("message", async (msg) => {
-      const data = JSON.parse(msg.toString());
+      const data = JSON.parse(msg.toString()) as Message;
       console.log("received message ", data);
 
       if (data.event === "heartbeat" && data.message === "ping") {
@@ -35,6 +38,18 @@ export default function startWsServer() {
       if (data.event === "ack") {
         //@ts-expect-error
         ws.sendAck = true;
+      }
+
+      if (data.event === "subscribe") {
+        if (!data.uid || !data.chatIds) {
+          return ws.send(JSON.stringify("uid or chatIds absent"));
+        }
+        const chats = await Promise.all(
+          data.chatIds.map((chatId) => chatsService.getOne(chatId))
+        );
+        const userChats = chats.filter((chat) => chat.users.includes(data.uid));
+        // @ts-ignore
+        ws.chatIds = userChats.map((userChat) => userChat.id);
       }
 
       if (data.event === "get-messages") {
