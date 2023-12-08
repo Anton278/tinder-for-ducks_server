@@ -33,7 +33,13 @@ class ChatsService {
   }
 
   async addMessage(chatId: string, message: Message) {
-    // await Chat.
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      throw ApiException.documentNotFound();
+    }
+    chat.messages = [message, ...chat.messages];
+    await chat.save();
+    return chat;
   }
 }
 

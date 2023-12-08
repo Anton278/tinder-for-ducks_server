@@ -17,6 +17,15 @@ const wss = new WebSocketServer({
 //   chatId: ""
 // };
 
+const broadcast = (chatId: string, message: any) => {
+  wss.clients.forEach((client) => {
+    // @ts-ignore
+    if (client.chatIds.includes(chatId)) {
+      client.send(JSON.stringify(message));
+    }
+  });
+};
+
 export default function startWsServer() {
   wss.on("connection", (ws, req) => {
     ws.on("error", (err) => console.log(err));
@@ -112,47 +121,40 @@ export default function startWsServer() {
       }
 
       if (data.event === "send-message") {
-        if (!data.message || !data.authorId || !data.chatId) {
-          return ws.send("message does not meet expected shape");
-        }
-        // @ts-expect-error
-        if (!ws.chatId) {
-          // @ts-expect-error
-          ws.chatId = data.chatId;
+        if (!data.message || !data.chatId) {
+          return ws.send(JSON.stringify("absent message or chatId"));
         }
 
         // set that server didn't receive ack messages
-        wss.clients.forEach((client) => {
-          // @ts-expect-error
-          if (client.chatId === ws.chatId) {
-            //@ts-expect-error
-            ws.sendAck = false;
-          }
-        });
+        // wss.clients.forEach((client) => {
+        //   // @ts-expect-error
+        //   if (client.chatId === ws.chatId) {
+        //     //@ts-expect-error
+        //     ws.sendAck = false;
+        //   }
+        // });
 
         try {
-          await chatsController.addMessage(data.chatId, {
-            authorId: data.authorId,
-            message: data.message,
-          });
-          const id = setInterval(() => {
-            let ackMessagesCount = 0;
-            wss.clients.forEach((client) => {
-              // @ts-expect-error
-              if (client.sendAck) {
-                return (ackMessagesCount += 1);
-              }
-              // @ts-expect-error
-              if (client.chatId === ws.chatId) {
-                client.send(JSON.stringify(data));
-              }
-            });
-            if (ackMessagesCount === 2) {
-              clearInterval(id);
-            }
-          }, 1000);
-        } catch (err) {
-          ws.send("failed to save message");
+          await chatsService.addMessage(data.chatId, data.message);
+          broadcast(data.chatId, data.message);
+          // const id = setInterval(() => {
+          //   let ackMessagesCount = 0;
+          //   wss.clients.forEach((client) => {
+          //     // @ts-expect-error
+          //     if (client.sendAck) {
+          //       return (ackMessagesCount += 1);
+          //     }
+          //     // @ts-expect-error
+          //     if (client.chatId === ws.chatId) {
+          //       client.send(JSON.stringify(data));
+          //     }
+          //   });
+          //   if (ackMessagesCount === 2) {
+          //     clearInterval(id);
+          //   }
+          // }, 1000);
+        } catch (err: any) {
+          ws.close(1011, JSON.stringify(err.message));
         }
         return;
       }

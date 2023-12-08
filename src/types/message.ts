@@ -1,3 +1,5 @@
+import type { Message as ChatMessage } from "../models/chat";
+
 type SubscribeMessage = {
   event: "subscribe";
   uid: string;
@@ -23,8 +25,7 @@ type GetMessagesMessage = {
 
 type SendMessageMessage = {
   event: "send-message";
-  message: string;
-  authorId: string;
+  message: ChatMessage;
   chatId: string;
 };
 
