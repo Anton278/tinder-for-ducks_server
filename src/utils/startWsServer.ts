@@ -29,8 +29,7 @@ export default function startWsServer(httpServer: Server) {
     ws.on("error", (err) => console.log(err));
 
     // Authorization based on access token
-    const tokenHeader = req.headers["authorization"];
-    const token = tokenHeader?.split(" ")[1];
+    const token = req.headers["sec-websocket-protocol"];
     if (!token) {
       ws.close(1008, "Unauthorized user");
       return;
