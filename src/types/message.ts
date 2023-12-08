@@ -17,7 +17,6 @@ type AckMessage = {
 
 type GetMessagesMessage = {
   event: "get-messages";
-  uid: string;
   chatId: string;
   messagesPerPage?: number;
   page?: number;

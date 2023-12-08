@@ -8,12 +8,23 @@ class ChatsService {
     return createdChat;
   }
 
-  async getOne(id: string) {
+  async getOne(
+    id: string,
+    pagination?: { mesagesPerPage?: number; page?: number }
+  ) {
     const chat = await Chat.findById(id);
     if (!chat) {
       throw ApiException.documentNotFound();
     }
-    return chat;
+
+    const page = pagination?.page || 1;
+    const messagesPerPage = pagination?.mesagesPerPage || 10;
+
+    const startIndex = (page - 1) * messagesPerPage;
+    const endIndex = page * messagesPerPage;
+    const totalPages = Math.ceil(chat.messages.length / messagesPerPage);
+
+    return { totalPages, messages: chat.messages.splice(startIndex, endIndex) };
   }
 
   async getAll(uid?: string) {

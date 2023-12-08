@@ -93,29 +93,22 @@ export default function startWsServer() {
       }
 
       if (data.event === "get-messages") {
-        // type GetChatMessage = {
-        //   event: "send-message";
-        //   uid: string;
-        //   chatId: string;
-        //   messagesPerPage?: number;
-        //   page?: number;
-        // };
-        if (!data.uid || !data.chatId) {
-          return ws.send(JSON.stringify("absent authorId or chatId"));
+        if (!data.chatId) {
+          return ws.send(JSON.stringify("absent chatId"));
         }
-        // @ts-expect-error
-        if (!ws.chatId) {
-          // @ts-expect-error
-          ws.chatId = data.chatId;
+        // @ts-ignore
+        if (!ws.chatIds.includes(data.chatId)) {
+          ws.close(1008, "Unauthorized user");
+          return;
         }
         try {
-          const messages = await chatsController.getOne(data.chatId, data.uid, {
+          const res = await chatsService.getOne(data.chatId, {
             mesagesPerPage: data.messagesPerPage,
             page: data.page,
           });
-          ws.send(JSON.stringify({ event: "get-messages", ...messages }));
+          ws.send(JSON.stringify({ event: "get-messages", ...res }));
         } catch (err) {
-          ws.send("Failed to get chat");
+          ws.send(JSON.stringify("Failed to get chat"));
         }
         return;
       }
@@ -172,7 +165,7 @@ export default function startWsServer() {
       const diff = (Date.now() - Date.parse(client.lastHeartbeat)) / 1000;
       if (diff >= heartbeatTimeout / 1000) {
         // not alive connection
-        client.close();
+        // client.close();
       }
     });
   }, heartbeatTimeout);
