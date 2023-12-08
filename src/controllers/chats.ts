@@ -45,11 +45,8 @@ class ChatsController {
       if (!user) {
         throw new Error("req.user is undefined");
       }
-      const chats = await chatsService.getAll();
-      const userChats = chats.filter(
-        (chat) => chat.users[0] === user.id || chat.users[1] === user.id
-      );
-      const chatDTOs = userChats.map((chat) => new ChatDTO(chat));
+      const chats = await chatsService.getAll(user.id);
+      const chatDTOs = chats.map((chat) => new ChatDTO(chat));
       res.status(200).json(chatDTOs);
     } catch (err) {
       next(err);

@@ -53,7 +53,7 @@ class AuthService {
     }
     const user = await usersService.getOne(payload.user.id);
     const tokens = tokensService.create(new FullUserDTO(user));
-    return tokens.accessToken;
+    return { accessToken: tokens.accessToken, uid: payload.user.id };
   }
 }
 const authService = new AuthService();

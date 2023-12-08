@@ -32,12 +32,16 @@ export default function startWsServer() {
 
       if (data.event === "auth") {
         try {
-          await authService.refreshAccessToken(data.token);
+          const { uid } = await authService.refreshAccessToken(data.token);
           // @ts-expect-error
           ws.isAuthed = true;
+          // @ts-expect-error
+          ws.uid = uid;
+          ws.send(JSON.stringify(`Success. Auth passed`));
         } catch (err) {
           console.log(err);
           ws.close(1008, JSON.stringify("Unauthorized user"));
+        } finally {
           return;
         }
       }
@@ -45,6 +49,25 @@ export default function startWsServer() {
       // @ts-expect-error
       if (!ws.isAuthed) {
         ws.close(1008, JSON.stringify("Unauthorized user"));
+        return;
+      }
+
+      if (data.event === "subscribe") {
+        if (!data.chatIds || !Array.isArray(data.chatIds)) {
+          ws.close(
+            1002,
+            JSON.stringify("chatsIds absent or not array array type")
+          );
+        }
+        // @ts-ignore
+        const userChats = await chatsService.getAll(ws.uid);
+        const allowedChats = data.chatIds.filter((chatId) => {
+          const chat = userChats.find((userChat) => chatId === userChat.id);
+          return chat;
+        });
+        // @ts-ignore
+        ws.chatIds = allowedChats;
+        ws.send(JSON.stringify(`Subscribed to next chats: ${allowedChats}`));
         return;
       }
 
@@ -58,18 +81,6 @@ export default function startWsServer() {
       if (data.event === "ack") {
         //@ts-expect-error
         ws.sendAck = true;
-      }
-
-      if (data.event === "subscribe") {
-        if (!data.uid || !data.chatIds) {
-          return ws.send(JSON.stringify("uid or chatIds absent"));
-        }
-        const chats = await Promise.all(
-          data.chatIds.map((chatId) => chatsService.getOne(chatId))
-        );
-        const userChats = chats.filter((chat) => chat.users.includes(data.uid));
-        // @ts-ignore
-        ws.chatIds = userChats.map((userChat) => userChat.id);
       }
 
       if (data.event === "get-messages") {

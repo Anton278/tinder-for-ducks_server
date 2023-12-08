@@ -124,7 +124,9 @@ class AuthController {
   async refreshAccessToken(req: Request, res: Response, next: NextFunction) {
     try {
       const { refreshToken } = req.cookies;
-      const accessToken = await authService.refreshAccessToken(refreshToken);
+      const { accessToken } = await authService.refreshAccessToken(
+        refreshToken
+      );
       res.status(200).json({ accessToken });
     } catch (err: any) {
       next(err);

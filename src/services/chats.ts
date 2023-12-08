@@ -16,9 +16,13 @@ class ChatsService {
     return chat;
   }
 
-  async getAll() {
+  async getAll(uid?: string) {
     const chats = await Chat.find({});
-    return chats;
+    let userChats = chats;
+    if (uid) {
+      userChats = chats.filter((chat) => chat.users.includes(uid));
+    }
+    return userChats;
   }
 
   async update(chat: IChatDTO) {
