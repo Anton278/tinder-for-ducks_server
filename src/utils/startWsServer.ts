@@ -3,6 +3,7 @@ import { WebSocketServer } from "ws";
 import chatsController from "../controllers/chats";
 import chatsService from "../services/chats";
 import { Message } from "../types/message";
+import authService from "../services/auth";
 
 const wssPort = process.env.WSS_PORT ? +process.env.WSS_PORT : 5001;
 const wss = new WebSocketServer({
@@ -18,15 +19,34 @@ const wss = new WebSocketServer({
 
 export default function startWsServer() {
   wss.on("connection", (ws, req) => {
-    console.log("req ", req);
-
     ws.on("error", (err) => console.log(err));
     // @ts-expect-error
     ws.lastHeartbeat = new Date().toISOString();
 
+    // @ts-expect-error
+    ws.isAuthed = false;
+
     ws.on("message", async (msg) => {
       const data = JSON.parse(msg.toString()) as Message;
       console.log("received message ", data);
+
+      if (data.event === "auth") {
+        try {
+          await authService.refreshAccessToken(data.token);
+          // @ts-expect-error
+          ws.isAuthed = true;
+        } catch (err) {
+          console.log(err);
+          ws.close(1008, JSON.stringify("Unauthorized user"));
+          return;
+        }
+      }
+
+      // @ts-expect-error
+      if (!ws.isAuthed) {
+        ws.close(1008, JSON.stringify("Unauthorized user"));
+        return;
+      }
 
       if (data.event === "heartbeat" && data.message === "ping") {
         // @ts-expect-error

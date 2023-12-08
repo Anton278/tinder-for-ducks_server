@@ -52,6 +52,11 @@ class TokensService {
     const payload = jwt.verify(refreshToken, refreshTokenSecret);
     return payload;
   }
+
+  async findToken(token: string) {
+    const tokenFromDB = Token.find({ refreshToken: token });
+    return tokenFromDB;
+  }
 }
 
 const tokensService = new TokensService();

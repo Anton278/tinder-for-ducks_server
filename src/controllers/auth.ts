@@ -121,31 +121,13 @@ class AuthController {
     }
   }
 
-  async refreshAccessToken(req: Request, res: Response) {
+  async refreshAccessToken(req: Request, res: Response, next: NextFunction) {
     try {
-      const accessTokenHeader = req.headers["access-token"];
-      if (typeof accessTokenHeader !== "string") {
-        return res.status(401).json({ message: "Unauthorized user" });
-      }
-      const accessToken = accessTokenHeader.split(" ")[1];
-      if (!accessToken) {
-        return res.status(400).json({
-          message: 'Access token header must be format: "Bearer <token>"',
-        });
-      }
-      const refreshToken: string | undefined = req.cookies.refreshToken;
-      if (!refreshToken) {
-        return res.status(500).json({ message: "refreshToken is undefined" });
-      }
-      const payload = tokensService.validateRefreshToken(refreshToken);
-      if (typeof payload === "string") {
-        throw new Error("token payload is string type");
-      }
-      const user = await usersService.getOne(payload.user.id);
-      const tokens = tokensService.create(new FullUserDTO(user));
-      res.status(200).json({ accessToken: tokens.accessToken });
+      const { refreshToken } = req.cookies;
+      const accessToken = await authService.refreshAccessToken(refreshToken);
+      res.status(200).json({ accessToken });
     } catch (err: any) {
-      res.status(500).json({ message: err.message });
+      next(err);
     }
   }
 

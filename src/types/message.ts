@@ -28,9 +28,15 @@ type SendMessageMessage = {
   chatId: string;
 };
 
+type AuthMessage = {
+  event: "auth";
+  token: string;
+};
+
 export type Message =
   | SubscribeMessage
   | HeartbeatMessage
   | AckMessage
   | GetMessagesMessage
-  | SendMessageMessage;
+  | SendMessageMessage
+  | AuthMessage;

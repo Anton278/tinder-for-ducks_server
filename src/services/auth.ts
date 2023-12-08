@@ -2,6 +2,9 @@ import bcrypt from "bcryptjs";
 
 import User from "../models/user.js";
 import ApiException from "../exceptions/api.js";
+import tokensService from "./tokens.js";
+import usersService from "./users.js";
+import FullUserDTO from "../dtos/fullUser.js";
 
 class AuthService {
   async register(
@@ -37,6 +40,20 @@ class AuthService {
   async login(username: string) {
     const user = await User.findOne({ username });
     return user;
+  }
+
+  async refreshAccessToken(refreshToken: string) {
+    if (!refreshToken) {
+      throw ApiException.unauthorized();
+    }
+    const payload = tokensService.validateRefreshToken(refreshToken);
+    const tokenFromDB = await tokensService.findToken(refreshToken);
+    if (typeof payload === "string" || !tokenFromDB) {
+      throw ApiException.unauthorized();
+    }
+    const user = await usersService.getOne(payload.user.id);
+    const tokens = tokensService.create(new FullUserDTO(user));
+    return tokens.accessToken;
   }
 }
 const authService = new AuthService();
