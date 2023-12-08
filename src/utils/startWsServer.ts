@@ -1,65 +1,57 @@
 import { WebSocketServer } from "ws";
+import { Server } from "http";
 
-import chatsController from "../controllers/chats";
 import chatsService from "../services/chats";
 import { Message } from "../types/message";
-import authService from "../services/auth";
+import tokensService from "../services/tokens";
 
-const wssPort = process.env.WSS_PORT ? +process.env.WSS_PORT : 5001;
-const wss = new WebSocketServer({
-  port: wssPort,
-});
-
-// const message = {
-//   event: "send-message",
-//   message: "test message",
-//   authorId: // ...
-//   chatId: ""
-// };
-
-const broadcast = (chatId: string, message: any) => {
-  wss.clients.forEach((client) => {
-    // @ts-ignore
-    if (client.chatIds.includes(chatId)) {
-      client.send(JSON.stringify(message));
-    }
+export default function startWsServer(httpServer: Server) {
+  httpServer.on("upgrade", (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, function done(ws) {
+      wss.emit("connection", ws, request);
+    });
   });
-};
 
-export default function startWsServer() {
+  const wss = new WebSocketServer({
+    noServer: true,
+  });
+
+  const broadcast = (chatId: string, message: any) => {
+    wss.clients.forEach((client) => {
+      // @ts-ignore
+      if (client.chatIds.includes(chatId)) {
+        client.send(JSON.stringify(message));
+      }
+    });
+  };
+
   wss.on("connection", (ws, req) => {
     ws.on("error", (err) => console.log(err));
-    // @ts-expect-error
-    ws.lastHeartbeat = new Date().toISOString();
+
+    // Authorization based on access token
+    const tokenHeader = req.headers["authorization"];
+    const token = tokenHeader?.split(" ")[1];
+    if (!token) {
+      ws.close(1008, "Unauthorized user");
+      return;
+    }
+    try {
+      const payload = tokensService.validateAccessToken(token);
+      // @ts-expect-error
+      ws.isAuthed = true;
+      // @ts-expect-error
+      ws.uid = payload.user.id;
+    } catch (err) {
+      ws.close(1008, "Unauthorized user");
+      return;
+    }
 
     // @ts-expect-error
-    ws.isAuthed = false;
+    ws.lastHeartbeat = new Date().toISOString();
 
     ws.on("message", async (msg) => {
       const data = JSON.parse(msg.toString()) as Message;
       console.log("received message ", data);
-
-      if (data.event === "auth") {
-        try {
-          const { uid } = await authService.refreshAccessToken(data.token);
-          // @ts-expect-error
-          ws.isAuthed = true;
-          // @ts-expect-error
-          ws.uid = uid;
-          ws.send(JSON.stringify(`Success. Auth passed`));
-        } catch (err) {
-          console.log(err);
-          ws.close(1008, JSON.stringify("Unauthorized user"));
-        } finally {
-          return;
-        }
-      }
-
-      // @ts-expect-error
-      if (!ws.isAuthed) {
-        ws.close(1008, JSON.stringify("Unauthorized user"));
-        return;
-      }
 
       if (data.event === "subscribe") {
         if (!data.chatIds || !Array.isArray(data.chatIds)) {

@@ -41,6 +41,9 @@ class TokensService {
       throw new Error("ACCESS_TOKEN_SECRET env variable is absent");
     }
     const payload = jwt.verify(accessToken, accessTokenSecret);
+    if (typeof payload === "string") {
+      throw new Error("Encountered string token payload");
+    }
     return payload;
   }
 

@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import fileUpload from "express-fileupload";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { createServer } from "http";
 
 import authRouter from "./src/routers/auth.js";
 import usersRouter from "./src/routers/users.js";
@@ -31,9 +32,11 @@ app.use("/chats", chatsRouter);
 
 app.use(errorMiddleware);
 
+const server = createServer(app);
+
 function startHttpServer() {
   const port = process.env.PORT ? +process.env.PORT : 5000;
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log("Server started on port " + port);
   });
 }
@@ -46,7 +49,7 @@ async function startApp() {
     await mongoose.connect(process.env.MONGODB_URL);
     await addFakeUsers();
     startHttpServer();
-    startWsServer();
+    startWsServer(server);
   } catch (err) {
     console.log(err);
   }
