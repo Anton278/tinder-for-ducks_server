@@ -1,4 +1,4 @@
-import { IChatDTO } from "../dtos/chat";
+import ChatDTO, { IChatDTO } from "../dtos/chat";
 import ApiException from "../exceptions/api";
 import Chat, { Message, IChat } from "../models/chat";
 
@@ -8,23 +8,20 @@ class ChatsService {
     return createdChat;
   }
 
-  async getOne(
-    id: string,
-    pagination?: { mesagesPerPage?: number; page?: number }
-  ) {
+  async getOne(id: string, page: number = 1, messagesPerPage: number = 10) {
     const chat = await Chat.findById(id);
     if (!chat) {
       throw ApiException.documentNotFound();
     }
-
-    const page = pagination?.page || 1;
-    const messagesPerPage = pagination?.mesagesPerPage || 10;
+    const chatDTO = new ChatDTO(chat);
 
     const startIndex = (page - 1) * messagesPerPage;
     const endIndex = page * messagesPerPage;
     const totalPages = Math.ceil(chat.messages.length / messagesPerPage);
 
-    return { totalPages, messages: chat.messages.splice(startIndex, endIndex) };
+    chatDTO.messages = chatDTO.messages.slice(startIndex, endIndex);
+
+    return { chat: chatDTO, totalPages, page };
   }
 
   async getAll(uid?: string) {

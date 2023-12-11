@@ -67,7 +67,13 @@ export default function startWsServer(httpServer: Server) {
         });
         // @ts-ignore
         ws.chatIds = allowedChats;
-        ws.send(JSON.stringify(`Subscribed to next chats: ${allowedChats}`));
+        ws.send(
+          JSON.stringify({
+            event: "subscribe",
+            success: true,
+            subscribedChats: allowedChats,
+          })
+        );
         return;
       }
 
@@ -83,21 +89,30 @@ export default function startWsServer(httpServer: Server) {
         ws.sendAck = true;
       }
 
-      if (data.event === "get-messages") {
+      // todo: add chatId and page to response
+      if (data.event === "get-chat") {
         if (!data.chatId) {
           return ws.send(JSON.stringify("absent chatId"));
         }
+
         // @ts-ignore
         if (!ws.chatIds.includes(data.chatId)) {
           ws.close(1008, "Unauthorized user");
           return;
         }
+
         try {
-          const res = await chatsService.getOne(data.chatId, {
-            mesagesPerPage: data.messagesPerPage,
-            page: data.page,
-          });
-          ws.send(JSON.stringify({ event: "get-messages", ...res }));
+          const res = await chatsService.getOne(
+            data.chatId,
+            data.page,
+            data.messagesPerPage
+          );
+          ws.send(
+            JSON.stringify({
+              event: "get-chat",
+              ...res,
+            })
+          );
         } catch (err) {
           ws.send(JSON.stringify("Failed to get chat"));
         }
@@ -143,7 +158,7 @@ export default function startWsServer(httpServer: Server) {
         return;
       }
 
-      return ws.send("event is not recognized");
+      return ws.send(JSON.stringify("event is not recognized"));
     });
   });
 

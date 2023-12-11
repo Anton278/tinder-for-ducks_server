@@ -2,7 +2,6 @@ import type { Message as ChatMessage } from "../models/chat";
 
 type SubscribeMessage = {
   event: "subscribe";
-  uid: string;
   chatIds: string[];
 };
 
@@ -15,8 +14,8 @@ type AckMessage = {
   event: "ack";
 };
 
-type GetMessagesMessage = {
-  event: "get-messages";
+type GetChatMessage = {
+  event: "get-chat";
   chatId: string;
   messagesPerPage?: number;
   page?: number;
@@ -37,6 +36,6 @@ export type Message =
   | SubscribeMessage
   | HeartbeatMessage
   | AckMessage
-  | GetMessagesMessage
+  | GetChatMessage
   | SendMessageMessage
   | AuthMessage;
