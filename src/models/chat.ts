@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 export interface Message {
   authorId: string;
   message: string;
+  id: string;
 }
 
 export interface IChat {

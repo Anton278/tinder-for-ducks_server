@@ -1,6 +1,7 @@
 import ChatDTO, { IChatDTO } from "../dtos/chat";
 import ApiException from "../exceptions/api";
-import Chat, { Message, IChat } from "../models/chat";
+import Chat, { Message } from "../models/chat";
+import { v4 as uuidv4 } from "uuid";
 
 class ChatsService {
   async create(users: string[]) {
@@ -45,7 +46,7 @@ class ChatsService {
     if (!chat) {
       throw ApiException.documentNotFound();
     }
-    chat.messages = [message, ...chat.messages];
+    chat.messages = [{ ...message, id: uuidv4() }, ...chat.messages];
     await chat.save();
     return chat;
   }
