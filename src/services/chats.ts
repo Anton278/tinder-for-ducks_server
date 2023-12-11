@@ -46,7 +46,7 @@ class ChatsService {
     if (!chat) {
       throw ApiException.documentNotFound();
     }
-    const newMessage = { message, authorId, id: uuidv4() };
+    const newMessage = { message, authorId, id: uuidv4(), isRead: false };
     chat.messages = [newMessage, ...chat.messages];
     await chat.save();
     return newMessage;

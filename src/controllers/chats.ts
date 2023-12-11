@@ -4,6 +4,7 @@ import chatsService from "../services/chats";
 import ChatDTO from "../dtos/chat";
 import usersService from "../services/users";
 import FullUserDTO from "../dtos/fullUser";
+import ChatSummaryDTO from "../dtos/chatSummary";
 
 class ChatsController {
   async create(req: Request, res: Response, next: NextFunction) {
@@ -45,7 +46,7 @@ class ChatsController {
         throw new Error("req.user is undefined");
       }
       const chats = await chatsService.getAll(user.id);
-      const chatDTOs = chats.map((chat) => new ChatDTO(chat));
+      const chatDTOs = chats.map((chat) => new ChatSummaryDTO(chat));
       res.status(200).json(chatDTOs);
     } catch (err) {
       next(err);
