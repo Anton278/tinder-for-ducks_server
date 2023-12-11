@@ -134,8 +134,17 @@ export default function startWsServer(httpServer: Server) {
         // });
 
         try {
-          await chatsService.addMessage(data.chatId, data.message);
-          broadcast(data.chatId, data.message);
+          const message = await chatsService.addMessage(
+            data.chatId,
+            data.message,
+            // @ts-expect-error
+            ws.uid
+          );
+          broadcast(data.chatId, {
+            event: "sent-message",
+            message,
+            chatId: data.chatId,
+          });
           // const id = setInterval(() => {
           //   let ackMessagesCount = 0;
           //   wss.clients.forEach((client) => {

@@ -23,7 +23,7 @@ type GetChatMessage = {
 
 type SendMessageMessage = {
   event: "send-message";
-  message: ChatMessage;
+  message: string;
   chatId: string;
 };
 
