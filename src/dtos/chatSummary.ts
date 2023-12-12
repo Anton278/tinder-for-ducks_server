@@ -5,6 +5,7 @@ class ChatSummaryDTO {
   users;
   lastMessage;
   unreadMessagesCount;
+  id;
 
   constructor(chat: HydratedDocument<IChat>) {
     this.users = chat.users;
@@ -13,6 +14,7 @@ class ChatSummaryDTO {
       (acc, { isRead }) => (isRead ? acc : acc + 1),
       0
     );
+    this.id = chat._id;
   }
 }
 
