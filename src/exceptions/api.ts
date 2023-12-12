@@ -28,6 +28,10 @@ class ApiException extends Error {
   static forbidden() {
     return new ApiException(403, "refuse to authorize");
   }
+
+  static wrongPassword() {
+    return new ApiException(400, "wrong password");
+  }
 }
 
 export default ApiException;

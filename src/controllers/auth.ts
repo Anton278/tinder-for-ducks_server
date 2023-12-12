@@ -155,6 +155,28 @@ class AuthController {
       next(err);
     }
   }
+
+  async changePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      // @ts-expect-error
+      const { id: uid } = req.user;
+      const user = await usersService.getOne(uid);
+
+      const { oldPassword, newPassword } = req.body;
+      const isPasswordCorrect = bcrypt.compareSync(oldPassword, user.password);
+      if (!isPasswordCorrect) {
+        throw ApiException.wrongPassword();
+      }
+
+      const hashPassword = bcrypt.hashSync(newPassword, 7);
+      user.password = hashPassword;
+      await user.save();
+      const userDTO = new FullUserDTO(user);
+      res.status(200).json(userDTO);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 const authController = new AuthController();
