@@ -29,20 +29,23 @@ class AuthController {
       if (!req.files) {
         return res.status(400).json({ message: "Files in request are absent" });
       }
-      const files = Object.values(req.files).map((file) =>
-        Array.isArray(file) ? file[0] : file
-      );
-      files.sort();
-      const images = await Promise.all(
-        files.map((file) => filesService.save(file))
-      );
 
       const user = await authService.register(
         req.body.email,
         req.body.username,
         req.body.password,
-        { description: req.body.description, images }
+        { description: req.body.description, images: [] }
       );
+
+      const files = Object.values(req.files).map((file) =>
+        Array.isArray(file) ? file[0] : file
+      );
+      files.sort();
+      const images = await Promise.all(
+        files.map((file) => filesService.save(file, user.id))
+      );
+      user.duck.images = images.map((img) => img.name);
+      await user.save();
 
       const tokens = tokensService.create(new FullUserDTO(user));
       await tokensService.saveToken(tokens.refreshToken, user.id);
