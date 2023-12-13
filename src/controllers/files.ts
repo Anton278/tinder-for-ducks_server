@@ -16,6 +16,34 @@ class FilesController {
       next(err);
     }
   }
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      // @ts-expect-error
+      const { id: uid } = req.user;
+      // @ts-expect-error
+      console.log("req.user ", req.user);
+
+      if (!req.files) {
+        res.status(400).json({ message: "Files are absent" });
+        return;
+      }
+      const file = Object.values(req.files)[0];
+      if (Array.isArray(file)) {
+        res.status(400).json({ message: "Not allowed file list" });
+        return;
+      }
+      const createdFile = await filesService.save(
+        file,
+        uid,
+        req.body.description
+      );
+      const createdFileDTO = new FileDTO(createdFile);
+      res.status(200).json(createdFileDTO);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 const filesController = new FilesController();
