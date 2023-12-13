@@ -12,6 +12,7 @@ import chatsRouter from "./src/routers/chats.js";
 import errorMiddleware from "./src/middlewares/error.js";
 import addFakeUsers from "./src/utils/addFakeUsers.js";
 import startWsServer from "./src/utils/startWsServer.js";
+import filesRouter from "./src/routers/files.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(fileUpload({}));
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/chats", chatsRouter);
+app.use("/files", filesRouter);
 
 app.use(errorMiddleware);
 

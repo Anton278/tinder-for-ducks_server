@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import authService from "../services/auth.js";
 import tokensService from "../services/tokens.js";
 import { TypedReqBody } from "../types/typedReqBody.js";
-import fileService from "../services/file.js";
+import filesService from "../services/files.js";
 import usersService from "../services/users.js";
 import ApiException from "../exceptions/api.js";
 import FullUserDTO from "../dtos/fullUser.js";
@@ -34,7 +34,7 @@ class AuthController {
       );
       files.sort();
       const images = await Promise.all(
-        files.map((file) => fileService.save(file))
+        files.map((file) => filesService.save(file))
       );
 
       const user = await authService.register(
