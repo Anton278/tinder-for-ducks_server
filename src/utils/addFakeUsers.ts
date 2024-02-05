@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { HydratedDocument } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
@@ -5,6 +6,7 @@ import axios from "axios";
 import User, { IUser } from "../models/user";
 import { GetRandomDuck } from "../types/responses/getRandomDuck";
 import usersService from "../services/users";
+import mongoose from "mongoose";
 
 class FakeUser {
   email;
@@ -63,7 +65,13 @@ async function createFakeUsers() {
   );
 }
 
-export default async function addFakeUsers() {
+async function addFakeUsers() {
+  if (!process.env.MONGODB_URL) {
+    throw new Error("MONGODB_URL absent");
+  }
+
+  await mongoose.connect(process.env.MONGODB_URL);
+
   const users = await usersService.getAll();
   if (!users.length) {
     await createFakeUsers();
@@ -74,4 +82,7 @@ export default async function addFakeUsers() {
     }
   }
   console.log("fake users added");
+  process.exit();
 }
+
+addFakeUsers();

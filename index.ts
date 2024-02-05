@@ -10,7 +10,6 @@ import authRouter from "./src/routers/auth.js";
 import usersRouter from "./src/routers/users.js";
 import chatsRouter from "./src/routers/chats.js";
 import errorMiddleware from "./src/middlewares/error.js";
-import addFakeUsers from "./src/utils/addFakeUsers.js";
 import startWsServer from "./src/utils/startWsServer.js";
 import filesRouter from "./src/routers/files.js";
 
@@ -49,7 +48,6 @@ async function startApp() {
       throw new Error("MONGODB_URL is not present");
     }
     await mongoose.connect(process.env.MONGODB_URL);
-    await addFakeUsers();
     startHttpServer();
     startWsServer(server);
   } catch (err) {
