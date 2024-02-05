@@ -47,7 +47,7 @@ class AuthController {
       user.duck.images = images.map((img) => img.name);
       await user.save();
 
-      const tokens = tokensService.create(new FullUserDTO(user));
+      const tokens = tokensService.create(user.id);
       await tokensService.saveToken(tokens.refreshToken, user.id);
       res.cookie("refreshToken", tokens.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -81,7 +81,7 @@ class AuthController {
       if (!isPasswordCorrect) {
         return res.status(400).json({ message: "Wrong username or password" });
       }
-      const tokens = tokensService.create(new FullUserDTO(user));
+      const tokens = tokensService.create(user.id);
       await tokensService.saveToken(tokens.refreshToken, user._id);
       res.cookie("refreshToken", tokens.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -116,7 +116,7 @@ class AuthController {
         console.log("token payload is string");
         return res.status(500).json({});
       }
-      await tokensService.delete(payload.user.id);
+      await tokensService.delete(payload.subject);
       res.clearCookie("refreshToken");
       res.status(200).json({});
     } catch (err: any) {

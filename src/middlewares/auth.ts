@@ -23,7 +23,7 @@ export default function authMiddleware(
     const payload = tokensService.validateAccessToken(accessToken);
     if (typeof payload !== "string") {
       // @ts-ignore
-      req.user = payload.user;
+      req.user = { id: payload.subject };
     }
 
     next();

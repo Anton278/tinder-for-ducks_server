@@ -2,20 +2,22 @@ import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
 
 import Token from "../models/token.js";
-import { IFullUserDTO } from "../dtos/fullUser.js";
 
 class TokensService {
-  create(user: IFullUserDTO) {
+  create(uid: string) {
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
     const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
     if (!accessTokenSecret || !refreshTokenSecret) {
       throw new Error("Absent access or refresh token secrets");
     }
-    const accessToken = jwt.sign({ user }, accessTokenSecret, {
+
+    const accessToken = jwt.sign({}, accessTokenSecret, {
       expiresIn: "10m",
+      subject: uid,
     });
-    const refreshToken = jwt.sign({ user }, refreshTokenSecret, {
+    const refreshToken = jwt.sign({}, refreshTokenSecret, {
       expiresIn: "25 days",
+      subject: uid,
     });
     return { accessToken, refreshToken };
   }
@@ -52,6 +54,7 @@ class TokensService {
     if (!refreshTokenSecret) {
       throw new Error("REFRESH_TOKEN_SECRET env variable is absent");
     }
+
     const payload = jwt.verify(refreshToken, refreshTokenSecret);
     return payload;
   }
