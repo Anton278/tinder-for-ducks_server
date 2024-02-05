@@ -132,6 +132,8 @@ class AuthController {
       );
       res.status(200).json({ accessToken });
     } catch (err: any) {
+      console.log("refresh token err ", err);
+
       next(err);
     }
   }

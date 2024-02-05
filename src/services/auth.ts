@@ -51,9 +51,11 @@ class AuthService {
     if (typeof payload === "string" || !tokenFromDB) {
       throw ApiException.unauthorized();
     }
-    const user = await usersService.getOne(payload.subject);
+
+    // @ts-ignore
+    const user = await usersService.getOne(payload.sub);
     const tokens = tokensService.create(user.id);
-    return { accessToken: tokens.accessToken, uid: payload.user.id };
+    return { accessToken: tokens.accessToken, uid: payload.sub };
   }
 }
 const authService = new AuthService();
