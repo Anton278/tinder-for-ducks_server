@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import fileUpload from "express-fileupload";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { createServer } from "http";
 
 import authRouter from "./src/routers/auth.js";
 import usersRouter from "./src/routers/users.js";
@@ -33,22 +32,19 @@ app.use("/files", filesRouter);
 
 app.use(errorMiddleware);
 
-const server = createServer(app);
-
-function startHttpServer() {
-  const port = process.env.PORT ? +process.env.PORT : 5000;
-  server.listen(port, () => {
-    console.log("Server started on port " + port);
-  });
-}
-
 async function startApp() {
+  const port = process.env.PORT || 5000;
+  if (!process.env.MONGODB_URL) {
+    throw new Error("MongoDB URL is not defined");
+  }
+
   try {
-    if (!process.env.MONGODB_URL) {
-      throw new Error("MONGODB_URL is not present");
-    }
     await mongoose.connect(process.env.MONGODB_URL);
-    startHttpServer();
+
+    const server = app.listen(port, () => {
+      console.log("Server started on port " + port);
+    });
+
     startWsServer(server);
   } catch (err) {
     console.log(err);
