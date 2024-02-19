@@ -25,6 +25,7 @@ class AuthController {
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: "Error on registration", errors });
     }
+
     try {
       if (!req.files) {
         return res.status(400).json({ message: "Files in request are absent" });
